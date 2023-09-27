@@ -1,0 +1,21 @@
+
+# Change to 8.0-jammy
+# OR 8.0-mariner2.0
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0-jammy AS build
+ARG TARGETARCH
+WORKDIR /source
+
+COPY *.csproj .
+COPY *.config .
+RUN dotnet restore -r linux-$TARGETARCH
+
+COPY . .
+RUN dotnet publish -r linux-$TARGETARCH -c release --no-restore -o /app
+
+# Change to 8.0-jammy-chiseled
+# OR 8.0-mariner2.0-distroless
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled
+WORKDIR /app
+COPY --from=build /app ./
+USER $APP_UID
+ENTRYPOINT ["dotnet", "releasesapi.dll"]

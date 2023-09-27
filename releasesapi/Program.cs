@@ -18,7 +18,7 @@ app.MapGet("/releases", async () => await ReleaseReport.Generator.MakeReportAsyn
 
 app.Run();
 
-// Disable for native AOT
+// Uncomment for native AOT
 // [JsonSerializable(typeof(ReportJson.Report))]
 // internal partial class AppJsonSerializerContext : JsonSerializerContext
 // {
