@@ -1,0 +1,28 @@
+# https://hub.docker.com/_/microsoft-dotnet
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/nightly/sdk:8.0-jammy-aot AS build
+ARG TARGETARCH
+WORKDIR /source
+
+# copy csproj and restore as distinct layers
+COPY *.csproj .
+COPY *.config .
+RUN dotnet restore -r linux-$TARGETARCH
+
+# copy everything else and build app
+COPY . .
+RUN dotnet publish -r linux-$TARGETARCH -c release --no-restore -o /app --self-contained
+RUN rm /app/*.dbg /app/*.Development.json
+
+# final stage/image
+FROM mcr.microsoft.com/dotnet/nightly/runtime-deps:8.0-jammy-chiseled-aot
+WORKDIR /app
+COPY --from=build /app ./
+USER $APP_UID
+ENTRYPOINT ["./releasesapi"]
+
+# starting point: 218 MB
+# jammy-chiseled: 110 MB
+# mariner distroless: 119 MB
+# trimming: 48.5 MB
+# AOT: 36.5 MB
+# AOT+slim builder: 33.6 MB
