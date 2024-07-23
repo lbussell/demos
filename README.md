@@ -3,8 +3,7 @@
 Size experiments for https://github.com/dotnet/dotnet-docker/issues/4771.
 
 All images have the same set of dependencies installed, including `zlib`.
-All image sizes are uncompressed.
-`containerd` image store was not used.
+Uncompressed image sizes do not use `containerd` image store.
 
 ## Results
 
