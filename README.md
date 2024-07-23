@@ -60,19 +60,19 @@ The [package spec](https://github.com/microsoft/azurelinux/blob/3.0/SPECS/prebui
 If the contents of the package were the same then we would have a negligible diff here.
 You can see the diff of this more clearly in [this image](2.png).
 
-### Conclusion
+## Conclusion
 
 We could get the same benefits as using Marinara by simply squashing our final layer of the Azure Linux distroless image.
 In fact, I did this with `azurelinux3.0-distroless-squashed` and got an image size of 23.12 MB uncompressed / 9.69 MB compressed.
 That's identical to the result with Marinara.
 In my opinion this splits up the decision into two separate factors:
 
-#### Using Marinara
+### Using Marinara
 
 - Pros: Simplicity of Dockerfile definition
 - Cons: Lack of direct support
 
-#### Squashing final image layer
+### Squashing final image layer
 
 - Pros: Dockerfile will always have perfect size efficiency
 - Cons: Lose base image layer sharing with other images based on the Azure Linux distroless base image, longer build time
