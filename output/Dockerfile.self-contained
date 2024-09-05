@@ -1,0 +1,29 @@
+# Learn about building .NET container images:
+# https://github.com/dotnet/dotnet-docker/blob/main/samples/README.md
+FROM mcr.microsoft.com/dotnet/nightly/sdk:9.0 AS build
+ARG TARGETARCH
+WORKDIR /source
+
+# Copy project file and restore as distinct layers
+COPY *.csproj .
+RUN dotnet restore -r linux-$TARGETARCH
+
+# Copy source code and publish app
+COPY . .
+RUN dotnet publish -a $TARGETARCH --no-restore -o /app
+
+
+# Final stage
+# Since the app is self-contained, there's no dependency on the .NET Runtime.
+FROM mcr.microsoft.com/dotnet/nightly/runtime-deps:9.0
+WORKDIR /app
+COPY --from=build /app .
+USER $APP_UID
+ENTRYPOINT ["./dotnetapp"]
+
+Debug:
+Name: self-contained
+ImageSuffix: 
+imageSuffix: 
+Version: 9.0
+PublishMode: SelfContained
