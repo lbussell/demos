@@ -1,0 +1,35 @@
+{%- macro from(repo, version, tagSuffix, as) -%}
+{%- capture asSuffix -%}
+{%- if as.size != 0 %} AS {{ as }}{% endif -%}
+{%- endcapture -%}
+FROM mcr.microsoft.com/dotnet/{{ repo }}:{{ version }}{{ tagSuffix }}{{ asSuffix }}
+{%- endmacro -%}
+
+{%- macro ridArg(publishMode) -%}
+{%- case publishMode -%}
+    {%- when "SelfContained" -%}
+        -r linux-$TARGETARCH
+    {%- else -%}
+        -a $TARGETARCH
+{%- endcase -%}
+{%- endmacro -%}
+
+{%- macro publishArgs(publishMode) -%}
+{%- capture publishArg -%}
+{%- case publishMode -%}
+    {%- when "SelfContained" -%}
+        --self-contained
+    {%- endcase -%}
+{%- endcapture -%}
+{%- if publishArg.size != 0 -%}
+    {{ publishArg }}
+{%- endif -%}
+{%- endmacro -%}
+
+{%- macro restore(publishMode) -%}
+dotnet restore {{ ridArg(publishMode) }}
+{%- endmacro -%}
+
+{%- macro publish(publishMode) -%}
+dotnet publish {{ ridArg(publishMode) }}{{ publishArgs(publishMode) }} --no-restore -o /app
+{%- endmacro -%}

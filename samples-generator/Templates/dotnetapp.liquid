@@ -1,0 +1,46 @@
+{%- from 'instructions' -%}
+
+{%- capture imageSuffix -%}
+{%- if ImageSuffix.size != 0 -%}
+    {{- '-' | append: ImageSuffix -}}
+{%- else %}
+    {{- ImageSuffix -}}
+{%- endif -%}
+{%- endcapture -%}
+
+# Learn about building .NET container images:
+# https://github.com/dotnet/dotnet-docker/blob/main/samples/README.md
+{{ from('nightly/sdk', Version, imageSuffix, 'build') }}
+ARG TARGETARCH
+WORKDIR /source
+
+# Copy project file and restore as distinct layers
+COPY *.csproj .
+RUN {{ restore(PublishMode) }}
+
+# Copy source code and publish app
+COPY . .
+RUN dotnet publish -a $TARGETARCH --no-restore -o /app
+
+
+{% case PublishMode -%}
+{%- when "SelfContained" -%}
+# Final stage
+# Since the app is self-contained, there's no dependency on the .NET Runtime.
+{{ from('nightly/runtime-deps', Version, imageSuffix, '') }}
+{%- else -%}
+# Runtime stage
+{{ from('nightly/runtime', Version, imageSuffix, '') }}
+{%- endcase -%}
+
+WORKDIR /app
+COPY --from=build /app .
+USER $APP_UID
+ENTRYPOINT ["./dotnetapp"]
+
+Debug:
+Name: {{Name}}
+ImageSuffix: {{ImageSuffix}}
+imageSuffix: {{imageSuffix}}
+Version: {{ Version }}
+PublishMode: {{PublishMode}}
