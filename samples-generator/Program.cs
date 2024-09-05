@@ -10,21 +10,22 @@ public class Program
 {
     static void Main(string[] args)
     {
-        const string OutputDir = "Out";
+        const string OutputDir = "../output";
+        const string TemplatesDir = "Templates";
+        string templatePath = Path.Combine(TemplatesDir, "dotnetapp.liquid");
+        string currentTemplate = File.ReadAllText(templatePath);
 
         ClearDirectory(OutputDir);
 
-        FluidParserOptions options = new() { AllowFunctions = true }; 
+        FluidParserOptions options = new() { AllowFunctions = true };
         FluidParser fluidParser = new(options);
 
         SamplesManifest manifest = GetManifest();
 
-        string template = File.ReadAllText("Templates/dotnetapp.liquid");
-
         TemplateOptions.Default.ValueConverters.Add(v => v is PublishMode publishMode ? $"{publishMode}" : null);
         TemplateOptions.Default.FileProvider = new PhysicalFileProvider(Path.GetFullPath("Templates"));
 
-        if (fluidParser.TryParse(template, out IFluidTemplate? tree, out string error))
+        if (fluidParser.TryParse(currentTemplate, out IFluidTemplate? tree, out string error))
         {
             foreach ((string version, List<SampleDockerfile> dockerfiles) in manifest.Versions)
             {
@@ -36,7 +37,7 @@ public class Program
 
                     string dockerfileContents = tree.Render(context);
 
-                    string outputFilePath = Path.Combine(OutputDir, dockerfile.FileName);
+                    string outputFilePath = Path.GetFullPath(Path.Combine(OutputDir, dockerfile.FileName));
                     File.WriteAllText(outputFilePath, dockerfileContents);
                     Console.WriteLine($"Wrote {outputFilePath}");
                 }
@@ -50,6 +51,7 @@ public class Program
 
     private static void ClearDirectory(string path)
     {
+        path = Path.GetFullPath(path);
         Console.WriteLine($"Clearing directory {path}...");
         var directoryInfo = new DirectoryInfo(path);
 
@@ -116,41 +118,6 @@ public class Program
 
     }
 }
-
-/*
-
-9.0:
-    aspnetapp:
-        Name: default
-            ImageSuffix: 
-            PublishMode: fx-dependent
-        Name: self-contained
-            ImageSuffix:
-            PublishMode: self-contained
-        Name: alpine
-            ImageSuffix: alpine
-            PublishMode: fx-dependent
-            ForceGlobalization: true
-        Name: ubuntu
-            ImageSuffix: noble
-            PublishMode: fx-dependent
-            ForceGlobalization: true
-        Name: ubuntu-chiseled
-            ImageSuffix: noble-chiseled
-            PublishMode: fx-dependent
-            IsDistroless: true
-
-8.0:
-    aspnetapp:
-        Name: default
-            ImageSuffix: 
-            PublishMode: fx-dependent
-    dotnetapp:
-        Name: default
-            ImageSuffix: 
-            PublishMode: fx-dependent
-
-*/
 
 public class SamplesManifest
 {
