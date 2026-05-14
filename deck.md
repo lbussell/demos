@@ -5,26 +5,46 @@ aspectratio: 169
 ---
 
 # Property Testing
-l
+@lbussell / loganbussell
 
 # Background
 - LLMs generate code really quickly
 - The bottleneck is how quickly changes can be validated
 
-# Question
+# Problem
 How do we get *absolute* confidence in what the LLM generated?
 
-# Answer
-Test it!
+# What are property tests?
 
-# C# code
+# Building generators
+
+Start broad, then add domain constraints:
+
+1. `Gen.String`
+2. valid serialized text
+3. domain-shaped values
+4. composed domain objects
+5. spec-backed property checks
+
+# Example: Containers - SHA-256 digests
+
+Generate the domain value first:
 
 ```csharp
-public sealed class Greeter
-{
-    public string Greet(string name)
-    {
-        return $"Hello, {name}!";
-    }
-}
+Gen.Byte.Array[32, 32]
+    .Select(bytes =>
+        $"sha256:{Convert.ToHexString(bytes).ToLowerInvariant()}")
 ```
+
+# Example: Containers
+
+Build small generators and compose them:
+
+- registry host
+- repository component
+- repository name
+- tag reference
+- SHA-256 digest
+- full image specifier
+
+# Guardrails
