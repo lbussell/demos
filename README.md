@@ -12,3 +12,10 @@ demonstrating property-based testing with
 ```bash
 dotnet test
 ```
+
+To see generated container image examples and a CsCheck classification table in
+the console, run the generator output demo with detailed logging:
+
+```bash
+dotnet test --filter GeneratorOutputExamples --logger "console;verbosity=detailed"
+```
