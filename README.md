@@ -1,12 +1,11 @@
 # demos
 
-This repository contains .NET demos. The current solution targets .NET 10 and
-includes:
+This repository contains .NET demos and slide deck sources.
+
+The current .NET solution targets .NET 10 and includes:
 
 - `PropertyTesting/PropertyTesting.csproj`, an MSTest project for demonstrating
   property-based testing with [CsCheck](https://www.nuget.org/packages/CsCheck).
-- `Slides/Slides.csproj`, a console app that generates a single-file HTML slide
-  deck with [Fluid](https://github.com/sebastienros/fluid).
 
 - [CsCheck documentation](https://github.com/AnthonyLloyd/CsCheck/blob/master/README.md)
 
@@ -16,8 +15,12 @@ includes:
 dotnet test
 ```
 
-## Generate the slide deck
+## Generate the slide deck PDF
 
 ```bash
-dotnet run --project Slides
+./build-deck.sh
 ```
+
+The slide source is `deck.md`. The build script requires
+[Pandoc](https://pandoc.org/) and a LaTeX engine such as `tectonic`, `xelatex`,
+`lualatex`, or `pdflatex`, and writes `deck.pdf`.
